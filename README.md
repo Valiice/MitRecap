@@ -1,51 +1,84 @@
 # Mit Recap
 
-A Dalamud plugin that shows when your party pressed their mitigations and heals during a duty.
-It looks like [Death Recap](https://github.com/Kouzukii/ffxiv-deathrecap), but covers the whole duty and not only the moments before a death.
+[![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Valiice/MitRecap/total?style=flat-square&color=blue)](https://github.com/Valiice/MitRecap/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/Valiice/MitRecap?include_prereleases&style=flat-square&color=green)](https://github.com/Valiice/MitRecap/releases/latest)
+[![GitHub License](https://img.shields.io/github/license/Valiice/MitRecap?style=flat-square&color=orange)](LICENSE.md)
+[![GitHub Issues](https://img.shields.io/github/issues/Valiice/MitRecap?style=flat-square)](https://github.com/Valiice/MitRecap/issues)
+[![Download Latest Zip](https://img.shields.io/badge/Download-Latest%20Zip-blue?style=flat-square)](https://github.com/Valiice/MitRecap/releases/latest/download/MitRecap.zip)
 
-## Use
+See what your party pressed, and what they left unpressed.
+
+Mit Recap records every mitigation and heal your party uses in a duty and lists them pull by pull. It looks like [Death Recap](https://github.com/Kouzukii/ffxiv-deathrecap), but covers the whole duty instead of only the moments before a death.
+
+## Installation
+
+1. Add my custom plugin repository: [https://raw.githubusercontent.com/Valiice/DalamudPluginRepo/master/repo.json](https://github.com/Valiice/DalamudPluginRepo)
+2. Search for **Mit Recap** in the Plugin Installer.
+3. Install and Enable.
+
+Not on the official repo. Alternatively, build with `dotnet build MitRecap/MitRecap.csproj -c Release` and load `MitRecap/bin/Release/MitRecap` as a dev plugin.
+
+## Usage
 
 - In a duty, right-click a party member and pick **Mit Recap**.
-- Or type `/mitrecap` at any time. The log of the last duty stays until you enter the next one.
+- `/mitrecap` opens the window at any time.
 
-The window lists every mitigation and heal the player used, split by pull, with the time into the pull, the amount healed (with overheal shown apart in grey), the target, the target's HP at that moment and the statuses applied. Deaths show as red rows. Pick **Everyone** to see the whole party in one list.
+Pick a player at the top, or **Everyone** for the whole party in one list. The list on the left jumps to a single pull.
 
-## What counts
+## What you see
 
-Any action that heals, shields or applies a status and deals no damage. Damage buffs, stances and similar are hidden by default. Right-click an ability in the table to hide it, and use the filter button to bring hidden ones back.
+Each press is one row:
 
-## Mitigated (est.)
+- **Time** into the duty. Hover it for the time into the pull.
+- **Healed**, with overheal in grey next to it.
+- **Mitigated (est.)**, an estimate of the damage that press prevented. Shields count what they absorbed.
+- **Target** and their **HP** when the press landed. An area heal shows one bar per player.
+- **Status effects** the press applied.
 
-For known mitigations the table also shows an estimate of the damage the press prevented. For every hit taken while the mitigation was up, the plugin works out how hard the hit would have landed without any mitigation. Mitigations in this game multiply (20% and 10% together are 28%, not 30%), so when several are active the damage saved by a hit is shared between them by strength.
+Deaths are red rows that name the hit that killed the player. Hover one for the last hits they took.
 
-For a shield the number is the part of each hit the shield absorbed. The game only shows the total shield on a player, so with several shields up the split between them is a guess.
-
-It is an estimate. Blocks, parries, invulnerabilities and damage over time are not counted, and a mitigation the plugin does not know gets no number at all.
-
-Some abilities heal their user with every hit landed while they are up, such as Raw Intuition, Bloodwhetting, Nascent Flash, Bloodbath and Living Dead. Those heals are added to the press, next to its mitigation. Attacks that also heal the party, such as Assize and Pneuma, get a row of their own.
+Damage buffs, stances and similar are hidden by default. Right-click an ability to hide it, and use the filter button to bring hidden ones back.
 
 ## Not pressed
 
-At the top of the whole duty view, a "Never used" row lists the cooldowns a player did not press a single time in the duty. It is left out when the duty has only one pull, where it would repeat that pull's own row.
+Under each pull, a **Not pressed** row shows the mitigations a player had ready in that pull and did not use. It updates during the fight.
 
-Under each pull, a "Not pressed" row shows the icons of the cooldowns a player had ready during that pull and did not use. During a fight it updates live: an icon disappears the moment the cooldown is pressed. It only lists what the player's job has at the level the duty syncs them to. Role actions such as Reprisal and Arm's Length are the exception, because level sync does not take them away: for those it uses the lowest level the player can really be on that job (80 for a Viper, 30 for any job with a soul crystal). A role action above that which the player was seen pressing in the duty is added too, since the press proves they have it. It leaves out a cooldown that was still recharging from an earlier pull, or that only came back in the last 20 seconds. Pulls shorter than 15 seconds are not judged. In a long pull, a cooldown that was pressed but could have been pressed more often is listed in grey with a count, such as 1/3. A DPS is only asked to have used Feint, Addle and their party mitigation at some point in the duty, not in every pull. After a wipe everything counts as ready again, as it is in the game. Invulnerabilities, abilities paid for with a gauge and plain heals are not listed, since holding a heal is often the right call. Arm's Length only counts in a pull where an enemy auto-attacked the player.
+- **Could press more** lists cooldowns that were used, but less often than they were ready, with a count such as 1/3.
+- **Never used**, at the top, lists what a player did not press once in the whole duty.
 
-## Reporting a problem
+Mit Recap shows what happened. Whether a press was needed is for you to decide. To keep the list fair it leaves out:
 
-The copy button in the toolbar puts the whole duty on your clipboard as text, ready to paste into an issue. Player names are replaced by P1, P2 and so on.
+- anything the player's job does not have at the level the duty syncs them to
+- cooldowns that were still recharging, or only came back in the last 20 seconds of the pull
+- pulls shorter than 15 seconds
+- plain heals, invulnerabilities and abilities that cost gauge
+- Arm's Length, unless an enemy was auto-attacking the player
+- Feint, Addle and DPS party mitigation in individual pulls. Those are only listed under Never used.
 
-## Sharing a duty
+## Sharing
 
-The share button copies a share code for the duty you are looking at. Someone else with Mit Recap copies that code and presses the import button, and the duty shows up in their duty list, marked as imported, exactly as you saw it.
+- **Copy** puts the whole duty on your clipboard as text, with player names replaced by P1, P2 and so on. Use this for bug reports.
+- **Share** copies a code that someone else with Mit Recap can **Import** to see the duty in their own window. A share code contains character names, so do not post it in public.
 
-A share code contains character names, so send it to people directly and do not post it in public. For a public bug report, use the copy button instead.
+The box at the top lists the duties you did since starting the game. Nothing is saved to disk, so the list is empty again after a restart.
 
-## History
+## Limitations
 
-The duty box at the top lists the duties you did since starting the game, newest first. Nothing is saved to disk, so the list is empty again after a restart.
+- The mitigated number is an estimate. Blocks, parries, invulnerabilities and damage over time are not counted.
+- With several shields on one player, the split between them is a guess, because the game only shows the total.
+- Regen ticks are not listed.
+- Another player's real level is not known inside a duty, only the synced one. Role actions such as Reprisal and Arm's Length survive level sync, so for those Mit Recap goes by the lowest level the job can be, and adds any the player was seen pressing.
 
-Regen ticks are not listed.
+## Privacy
+
+Mit Recap only reads what the game already sent to your client. Nothing is requested from the server and nothing leaves your machine unless you copy it yourself.
 
 ## Credits
 
-Table layout, colours and HP bar are adapted from Death Recap by Kouzukii (MIT).
+Table layout, colours and HP bar are adapted from [Death Recap](https://github.com/Kouzukii/ffxiv-deathrecap) by Kouzukii (MIT). See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+## License & Copyright
+
+Copyright © 2026 Valiice
+
+Mit Recap is licensed under the GNU Affero General Public License v3.0; see [LICENSE](LICENSE.md) for details. You are free to use, modify, and redistribute the source code, provided derivative works keep the same license, credit this project with a link back to [https://github.com/Valiice/MitRecap](https://github.com/Valiice/MitRecap), and retain this copyright notice.
