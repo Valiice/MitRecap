@@ -86,7 +86,7 @@ else
                 {
                     if (row.Event is { Kind: RecapKind.Death } death)
                     {
-                        DamageHit? killer = death.LastHits.Count > 0 ? death.LastHits[^1] : null;
+                        var killer = death.KillingBlow;
                         <tr class="death" title="@DeathTip(death)">
                             <td title="@PullTime(death)">@RecapText.Clock(death.Time)</td>
                             <td class="died">@(killer is { } k ? $"-{k.Amount:N0}" : "")</td>

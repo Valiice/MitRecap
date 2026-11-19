@@ -55,8 +55,26 @@ public sealed record RecapEvent(
 
     public IReadOnlyList<DamageHit> LastHits { get; init; } = [];
 
+    // A hit that found them at 0 HP landed after the one that killed them.
+    [JsonIgnore]
+    public DamageHit? KillingBlow
+    {
+        get
+        {
+            for (var i = this.LastHits.Count - 1; i >= 0; i--)
+            {
+                if (this.LastHits[i].HpBefore > 0 || this.LastHits[i].MaxHp == 0)
+                {
+                    return this.LastHits[i];
+                }
+            }
+
+            return this.LastHits.Count > 0 ? this.LastHits[^1] : null;
+        }
+    }
+
     // The killing blow was smaller than their HP and old enough to have landed well before the death.
     [JsonIgnore]
     public bool SurvivedLastHit =>
-        this.LastHits.Count > 0 && this.LastHits[^1] is var blow && blow.Amount < blow.HpBefore && this.Time - blow.Time > RecapLog.DamageDelay;
+        this.KillingBlow is { } blow && blow.Amount < blow.HpBefore && this.Time - blow.Time > RecapLog.DamageDelay;
 }

@@ -86,6 +86,7 @@ th:last-child { width: 99%; }
 .dps { color: var(--dps); }
 .unpressed { margin-right: 12px; }
 .unpressed > span:first-child { margin-right: 6px; }
+.unpressed img + .grey { margin-right: 8px; }
 
 .bars { display: flex; gap: 2px; width: 220px; }
 .hp { position: relative; flex: 1; height: 18px; background: #2a2c33; overflow: hidden; }
@@ -93,7 +94,7 @@ th:last-child { width: 99%; }
 .hp .fill { background: var(--hp); }
 .hp .heal { background: #ffffff50; }
 .hp .shield { top: 80%; background: var(--barrier); }
-.hp span { position: absolute; right: 4px; top: 0; font-size: 12px; text-shadow: 0 0 2px #000; }
+.hp span { position: absolute; right: 4px; top: 0; font-size: 12px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 1px 2px #000; }
 
 #blazor-error-ui { display: none; position: fixed; bottom: 0; left: 0; right: 0; padding: 8px 16px; background: #5a1e1e; }
 .died + .ability { margin-left: 4px; }

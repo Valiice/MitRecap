@@ -225,7 +225,7 @@ internal sealed class RecapTable(Configuration config, ActionCache actions)
     private void DrawDeathRow(RecapEvent e, bool everyone)
     {
         ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, Ui.ColorDeathRow);
-        DamageHit? killer = e.LastHits.Count > 0 ? e.LastHits[^1] : null;
+        var killer = e.KillingBlow;
 
         ImGui.TableNextColumn(); // Healed, used here for the damage of the killing blow
         if (killer is { } k)

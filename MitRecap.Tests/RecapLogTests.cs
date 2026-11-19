@@ -47,6 +47,21 @@ public class RecapLogTests
     }
 
     [Fact]
+    public void AHitOnSomeoneAlreadyAtZeroIsNotTheKillingBlow()
+    {
+        var start = new DateTime(2026, 1, 1, 20, 0, 0);
+        var log = new RecapLog();
+        log.StartSession(start);
+        log.AddDamage(start.AddSeconds(10.0), 1, "Goobbue", 40, 1400, 528, 6000);
+        log.AddDamage(start.AddSeconds(10.7), 1, "Goobbue", 7, 1158, 0, 6000);
+        log.AddDeath(start.AddSeconds(11), 1);
+
+        var death = Assert.Single(log.Events);
+        Assert.Equal(40u, death.KillingBlow?.ActionId);
+        Assert.Equal("Died to", RecapText.DeathVerb(death));
+    }
+
+    [Fact]
     public void LifeStealGoesToThePressThatGrantedIt()
     {
         var start = new DateTime(2026, 1, 1, 20, 0, 0);
