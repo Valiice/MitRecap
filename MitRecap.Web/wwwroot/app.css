@@ -100,3 +100,4 @@ th:last-child { width: 99%; }
 .open h2 { margin-top: 32px; }
 .recent { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .recent button { text-align: left; }
+.unpressed:not(:has(*)) { display: none; }
