@@ -24,11 +24,6 @@ internal static class Ui
     public const uint ColorDeathRow = 0x302020C0;
     public const uint ColorWhite = 0xFFFFFFFF;
 
-    // Job icons sit at this id plus the job's row id.
-    public const uint JobIconBase = 62100;
-
-    public static string Clock(TimeSpan t) => $"{(int)t.TotalMinutes}:{t.Seconds:00}";
-
     public static void TextColored(uint color, string text)
     {
         ImGui.PushStyleColor(ImGuiCol.Text, color);
@@ -99,8 +94,7 @@ internal static class Ui
 
         if (ImGui.IsItemHovered())
         {
-            var healed = target.Healed > 0 ? $", healed {target.Healed:N0}" : "";
-            ImGui.SetTooltip($"{target.Name}: {target.HpBefore:N0} / {target.MaxHp:N0} ({before:P0}){healed}");
+            ImGui.SetTooltip(RecapText.Hp(target));
         }
     }
 }

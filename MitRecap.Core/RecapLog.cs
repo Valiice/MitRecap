@@ -28,6 +28,8 @@ public sealed class RecapLog
 
     public bool Imported { get; private init; }
 
+    public GameData? Game { get; private init; }
+
     public DateTime Started => this.start;
 
     public string DutyName { get; set; } = "";
@@ -42,7 +44,7 @@ public sealed class RecapLog
 
     public static RecapLog FromData(LogData data)
     {
-        var log = new RecapLog { start = data.Started, DutyName = data.DutyName, Imported = true };
+        var log = new RecapLog { start = data.Started, DutyName = data.DutyName, Imported = true, Game = data.Game };
         log.wipes.AddRange(data.Wipes);
         log.players.AddRange(data.Players);
         log.events.AddRange(data.Events);
@@ -59,8 +61,8 @@ public sealed class RecapLog
         return log;
     }
 
-    public LogData ToData() =>
-        new(this.start, this.DutyName, this.wipes, this.players, [.. this.pulls.Select(p => new PullData(p.Number, p.Start, p.End, [.. p.AutoAttacked]))], this.events);
+    public LogData ToData(GameData? game = null) =>
+        new(this.start, this.DutyName, this.wipes, this.players, [.. this.pulls.Select(p => new PullData(p.Number, p.Start, p.End, [.. p.AutoAttacked]))], this.events, game);
 
     public void StartSession(DateTime now)
     {
@@ -229,6 +231,27 @@ public sealed class RecapLog
             {
                 yield return e;
             }
+        }
+    }
+
+    // One bar per player, in party order. Without a party member among the targets, any friendly target (an escorted NPC).
+    public void HpTargets(RecapEvent e, List<TargetHit> into)
+    {
+        into.Clear();
+        foreach (var p in this.players)
+        {
+            foreach (var t in e.Targets)
+            {
+                if (t.Id == p.Id && t.MaxHp > 0)
+                {
+                    into.Add(t);
+                }
+            }
+        }
+
+        if (into.Count == 0)
+        {
+            into.AddRange(e.Targets.Where(t => t.Friendly && t.MaxHp > 0));
         }
     }
 

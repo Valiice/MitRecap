@@ -6,19 +6,21 @@ namespace MitRecap.Core;
 // Unlike the export, a share code holds character names.
 public static class RecapShare
 {
-    private const string Prefix = "MITRECAP1:";
+    // Version 2 added the game data. Both are the same length.
+    private const string Prefix = "MITRECAP2:";
+    private const string PrefixWithoutGameData = "MITRECAP1:";
 
     // A code comes from a stranger's clipboard, so its size is capped before and after unpacking.
     private const int MaxCodeLength = 8_000_000;
     private const int MaxJsonBytes = 64_000_000;
     private const int MaxPlayers = 64;
 
-    public static string Encode(RecapLog log)
+    public static string Encode(RecapLog log, GameData game)
     {
         using var packed = new MemoryStream();
         using (var gzip = new GZipStream(packed, CompressionLevel.SmallestSize))
         {
-            JsonSerializer.Serialize(gzip, log.ToData());
+            JsonSerializer.Serialize(gzip, log.ToData(game));
         }
 
         return Prefix + Convert.ToBase64String(packed.ToArray());
@@ -27,7 +29,8 @@ public static class RecapShare
     public static RecapLog? Decode(string code)
     {
         code = code.Trim();
-        if (!code.StartsWith(Prefix, StringComparison.Ordinal) || code.Length > MaxCodeLength)
+        var known = code.StartsWith(Prefix, StringComparison.Ordinal) || code.StartsWith(PrefixWithoutGameData, StringComparison.Ordinal);
+        if (!known || code.Length > MaxCodeLength)
         {
             return null;
         }
@@ -61,6 +64,9 @@ public static class RecapShare
         d is { DutyName: not null, Wipes: not null, Players: not null, Pulls: not null, Events: not null } &&
         d.Started != default &&
         d.Players.Count <= MaxPlayers &&
+        d.Game is null or { Actions: not null, Statuses: not null, Cooldowns: not null, Hidden: not null, Mitigations: not null } &&
+        (d.Game == null || (d.Game.Actions.Values.Concat(d.Game.Statuses.Values).All(t => t is { Name: not null, Description: not null }) &&
+                            d.Game.Cooldowns.Values.All(list => list != null && list.All(c => c is { PressIds: not null })))) &&
         d.Events.Count <= RecapLog.MaxEvents &&
         d.Players.All(p => p is { Name: not null, Job: not null }) &&
         d.Pulls.Select((p, i) => p is { AutoAttacked: not null } && p.Number == i + 1).All(ok => ok) &&

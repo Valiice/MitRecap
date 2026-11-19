@@ -28,17 +28,36 @@ public class RecapShareTests
         log.CombatEnded(At(26));
         log.CombatStarted(At(60));
 
-        var copy = RecapShare.Decode(RecapShare.Encode(log));
+        var game = new GameData(
+            new() { [40] = new GameText("Rampart", 801) },
+            new() { [7] = new GameText("Rampart", 10152, "Damage taken is reduced.") },
+            new() { [1] = [.. all.Select(CooldownData.From)] },
+            [99],
+            [40]);
+        var copy = RecapShare.Decode(RecapShare.Encode(log, game));
 
         Assert.NotNull(copy);
         Assert.True(copy.Imported);
         Assert.False(copy.Recording);
         Assert.Equal("Tank Name", copy.Player(1)?.Name);
         Assert.Equal(log.Started, copy.Started);
+        Assert.Equal("Rampart", copy.Game?.Actions[40].Name);
+        Assert.Equal("Damage taken is reduced.", copy.Game?.Statuses[7].Description);
+        Assert.Equal(all[0].PressIds, copy.Game?.Cooldowns[1][0].ToCooldown().PressIds);
 
         // The pull still going is closed on import, so the live one is judged at that same moment.
         string Text(RecapLog l) => RecapExport.Build(l, "1.0", TimeSpan.FromSeconds(60), id => $"Action{id}", _ => all).Replace("live", "1:00.0");
         Assert.Equal(Text(log), Text(copy));
+    }
+
+    [Fact]
+    public void OlderPrefixStillImports()
+    {
+        var log = new RecapLog();
+        log.StartSession(Start);
+        var code = RecapShare.Encode(log, new GameData([], [], [], [], [])).Replace("MITRECAP2:", "MITRECAP1:");
+
+        Assert.NotNull(RecapShare.Decode(code));
     }
 
     [Theory]
@@ -57,7 +76,7 @@ public class RecapShareTests
     {
         var history = new History();
         var current = history.StartNew(At(0));
-        var imported = RecapShare.Decode(RecapShare.Encode(current))!;
+        var imported = RecapShare.Decode(RecapShare.Encode(current, new GameData([], [], [], [], [])))!;
 
         history.Import(imported);
 

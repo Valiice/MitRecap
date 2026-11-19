@@ -1,8 +1,6 @@
-using MitRecap.Core;
+namespace MitRecap.Core;
 
-namespace MitRecap.Windows;
-
-internal sealed class UnusedCache
+public sealed class UnusedCache(Func<PlayerInfo, RecapLog, IReadOnlyList<Cooldown>> cooldownsFor)
 {
     private const int WholeDuty = 0;
 
@@ -41,7 +39,7 @@ internal sealed class UnusedCache
     {
         if (!this.cooldowns.TryGetValue(p.Id, out var list))
         {
-            this.cooldowns[p.Id] = list = CooldownTable.For(p, this.log!);
+            this.cooldowns[p.Id] = list = cooldownsFor(p, this.log!);
         }
 
         return list;

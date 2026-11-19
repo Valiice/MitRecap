@@ -99,7 +99,7 @@ internal sealed class RecapWindow : Window
             {
                 if (p.JobId > 0)
                 {
-                    Ui.InlineIcon(Ui.JobIconBase + p.JobId);
+                    Ui.InlineIcon(RecapText.JobIcon(p.JobId));
                 }
 
                 ImGui.PushStyleColor(ImGuiCol.Text, Ui.RoleColor(p.Role));
@@ -233,13 +233,13 @@ internal sealed class RecapWindow : Window
     {
         if (ImGuiComponents.IconButton("share", FontAwesomeIcon.ShareAlt))
         {
-            ImGui.SetClipboardText(RecapShare.Encode(this.Log));
-            Notify("Share code copied. It contains character names, so do not post it publicly.", NotificationType.Success);
+            ImGui.SetClipboardText(RecapShare.Encode(this.Log, ShareGame.Build(this.Log, this.actions)));
+            Notify("Share code copied.", NotificationType.Success);
         }
 
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Copy a share code for this duty.\nSomeone else with Mit Recap can import it and see this duty in their own window.\nIt contains character names, so do not post it publicly.");
+            ImGui.SetTooltip("Copy a share code for this duty.\nSomeone else can import it in Mit Recap, or paste it at valiice.github.io/MitRecap.");
         }
 
         ImGui.SameLine();
@@ -326,7 +326,7 @@ internal sealed class RecapWindow : Window
 
             foreach (var pull in this.Log.Pulls)
             {
-                if (ImGui.Selectable($"Pull {pull.Number}  ({Ui.Clock(pull.Start)})", this.selectedPull == pull.Number))
+                if (ImGui.Selectable($"Pull {pull.Number}  ({RecapText.Clock(pull.Start)})", this.selectedPull == pull.Number))
                 {
                     this.selectedPull = pull.Number;
                 }
