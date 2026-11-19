@@ -58,7 +58,7 @@ Mit Recap shows what happened. Whether a press was needed is for you to decide. 
 ## Sharing
 
 - **Copy** puts the whole duty on your clipboard as text, with player names replaced by P1, P2 and so on. Use this for bug reports.
-- **Share** copies a code that someone else with Mit Recap can **Import** to see the duty in their own window. A share code contains character names, so do not post it in public.
+- **Share** copies a code with the whole duty, character names included. Someone else can **Import** it in Mit Recap, or paste it at [valiice.github.io/MitRecap](https://valiice.github.io/MitRecap/) to view it in a browser without the game. The site reads the code in the browser and uploads nothing.
 
 The box at the top lists the duties you did since starting the game. Nothing is saved to disk, so the list is empty again after a restart.
 

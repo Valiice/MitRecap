@@ -1,0 +1,96 @@
+/* Colours follow the plugin window, which adapts them from Death Recap by Kouzukii (MIT). */
+:root {
+    color-scheme: dark;
+    --bg: #17181c;
+    --panel: #212329;
+    --line: #34363d;
+    --text: #e6e6e6;
+    --grey: #808080;
+    --action: #b8a8f0;
+    --healed: #d1fa99;
+    --mitigated: #80c0f0;
+    --death: #e68066;
+    --hp: #378805;
+    --barrier: #ffff33;
+    --tank: #60a0ff;
+    --healer: #78d870;
+    --dps: #f07070;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 system-ui, sans-serif;
+}
+
+a { color: var(--mitigated); }
+
+header, .players, footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+}
+
+header { border-bottom: 1px solid var(--line); }
+h1 { margin: 0; font-size: 18px; }
+h2 { margin: 0 0 6px; font-size: 14px; }
+.duty { color: var(--grey); flex: 1; }
+footer { color: var(--grey); font-size: 12px; justify-content: space-between; }
+
+button {
+    background: var(--panel);
+    color: inherit;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover, button.on { border-color: var(--mitigated); }
+button.on { background: #2c3340; }
+button.primary { padding: 8px 20px; }
+
+.open { max-width: 720px; margin: 40px auto; padding: 0 16px; }
+.open textarea { width: 100%; height: 160px; box-sizing: border-box; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 8px; font: 12px monospace; margin-bottom: 8px; }
+.error { color: var(--death); }
+.note, .grey { color: var(--grey); }
+.loading { padding: 40px; text-align: center; color: var(--grey); }
+
+.recap { display: flex; align-items: flex-start; gap: 16px; padding: 0 16px 16px; }
+.pulls { display: flex; flex-direction: column; gap: 4px; flex: 0 0 160px; position: sticky; top: 8px; max-height: calc(100vh - 16px); overflow-y: auto; }
+.pulls button { text-align: left; }
+
+table { border-collapse: collapse; flex: 1; min-width: 0; }
+th, td { padding: 3px 8px; text-align: left; vertical-align: middle; white-space: nowrap; }
+td[colspan] { white-space: normal; }
+thead th { position: sticky; top: 0; background: var(--panel); border-bottom: 1px solid var(--line); font-weight: 600; }
+tbody tr:hover { background: #ffffff0a; }
+tr.pull { background: #80808040; }
+tr.death { background: #c0202030; }
+.hpcol { width: 30%; min-width: 180px; }
+
+.icon { height: 20px; vertical-align: middle; margin-right: 3px; }
+.ability { color: var(--action); }
+.healed { color: var(--healed); }
+.mitigated { color: var(--mitigated); }
+.died { color: var(--death); }
+.tank { color: var(--tank); }
+.healer { color: var(--healer); }
+.dps { color: var(--dps); }
+.unpressed { margin-right: 12px; }
+.unpressed > span:first-child { margin-right: 6px; }
+
+.bars { display: flex; gap: 2px; }
+.hp { position: relative; flex: 1; height: 18px; background: #2a2c33; overflow: hidden; }
+.hp > div { position: absolute; top: 0; bottom: 0; left: 0; }
+.hp .fill { background: var(--hp); }
+.hp .heal { background: #ffffff50; }
+.hp .shield { top: 80%; background: var(--barrier); }
+.hp span { position: absolute; right: 4px; top: 0; font-size: 12px; text-shadow: 0 0 2px #000; }
+
+#blazor-error-ui { display: none; position: fixed; bottom: 0; left: 0; right: 0; padding: 8px 16px; background: #5a1e1e; }
+.died + .ability { margin-left: 4px; }

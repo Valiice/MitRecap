@@ -1,0 +1,322 @@
+<header>
+    <h1>Mit Recap</h1>
+    @if (log != null)
+    {
+        <span class="duty">@(log.DutyName.Length > 0 ? log.DutyName : "Duty"), @log.Started.ToString("yyyy-MM-dd HH:mm")</span>
+        <button @onclick="Close">Open another</button>
+    }
+</header>
+
+@if (log == null)
+{
+    <main class="open">
+        <p>See which mitigations and heals a party pressed in a duty, pull by pull.</p>
+        <p>In the <a href="https://github.com/Valiice/MitRecap">Mit Recap</a> plugin, press the share button and paste the code here.</p>
+        <textarea @bind="code" placeholder="MITRECAP2:..." spellcheck="false"></textarea>
+        <button class="primary" @onclick="Open">Show recap</button>
+        @if (error != null)
+        {
+            <p class="error">@error</p>
+        }
+        <p class="note">The code is read in your browser. Nothing is uploaded.</p>
+    </main>
+}
+else
+{
+    <nav class="players">
+        <button class="@(player == 0 ? "on" : "")" @onclick="() => Show(0, pull)">Everyone</button>
+        @foreach (var p in log.Players)
+        {
+            var id = p.Id;
+            <button class="@Role(p.Role) @(player == id ? "on" : "")" @onclick="() => Show(id, pull)">
+                @if (p.JobId > 0)
+                {
+                    <img class="icon" src="@Icon(RecapText.JobIcon(p.JobId))" alt="@p.Job" title="@p.Job" onerror="this.remove()" />
+                }
+                @p.Name
+            </button>
+        }
+    </nav>
+
+    <main class="recap">
+        <nav class="pulls">
+            <h2>Pulls</h2>
+            <button class="@(pull == null ? "on" : "")" @onclick="() => Show(player, null)">Whole duty</button>
+            @foreach (var p in log.Pulls)
+            {
+                var number = p.Number;
+                <button class="@(pull == number ? "on" : "")" @onclick="() => Show(player, number)">Pull @number (@RecapText.Clock(p.Start))</button>
+            }
+        </nav>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Healed</th>
+                    <th title="@RecapText.MitigatedHelp">Mitigated (est.)</th>
+                    @if (Everyone)
+                    {
+                        <th>Player</th>
+                    }
+                    <th>Ability</th>
+                    <th>Target</th>
+                    <th class="hpcol">HP Before</th>
+                    <th>Status Effects</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in rows.Rows)
+                {
+                    if (row.Event is { Kind: RecapKind.Death } death)
+                    {
+                        DamageHit? killer = death.LastHits.Count > 0 ? death.LastHits[^1] : null;
+                        <tr class="death" title="@DeathTip(death)">
+                            <td title="@PullTime(death)">@RecapText.Clock(death.Time)</td>
+                            <td class="died">@(killer is { } k ? $"-{k.Amount:N0}" : "")</td>
+                            <td></td>
+                            @if (Everyone)
+                            {
+                                <td>@PlayerCell(death.PlayerId)</td>
+                            }
+                            <td>
+                                <span class="died">@RecapText.DeathVerb(death)</span>
+                                @if (killer is { } hit)
+                                {
+                                    @Ability(hit.ActionId)
+                                }
+                            </td>
+                            <td>@killer?.Source</td>
+                            <td>
+                                @if (killer is { MaxHp: > 0 } last)
+                                {
+                                    <div class="hp" title="@($"{last.HpBefore:N0} / {last.MaxHp:N0} before the killing blow")">
+                                        <div class="fill" style="width:@Percent(last.HpBefore, last.MaxHp)%"></div>
+                                        <span>@last.HpBefore.ToString("N0")</span>
+                                    </div>
+                                }
+                            </td>
+                            <td></td>
+                        </tr>
+                    }
+                    else if (row.Event is { } e)
+                    {
+                        var over = e.Overheal;
+                        log.HpTargets(e, hpTargets);
+                        <tr>
+                            <td title="@PullTime(e)">@RecapText.Clock(e.Time)</td>
+                            <td>
+                                @if (e.TotalHealed > 0)
+                                {
+                                    <span class="healed" title="@(e.LifeSteal > 0 ? RecapText.LifeSteal(e) : null)">+@((e.TotalHealed - over).ToString("N0"))</span>
+                                    @if (over > 0)
+                                    {
+                                        <span class="grey" title="@RecapText.Overheal(e)"> (@over.ToString("N0") over)</span>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (mitigations.Contains(e.ActionId))
+                                {
+                                    <span class="@(e.Mitigated >= 0.5 ? "mitigated" : "grey")" title="@RecapText.MitigatedHelp">~@e.Mitigated.ToString("N0")</span>
+                                }
+                            </td>
+                            @if (Everyone)
+                            {
+                                <td>@PlayerCell(e.PlayerId)</td>
+                            }
+                            <td>@Ability(e.ActionId)</td>
+                            <td title="@(e.Targets.Count > 1 ? string.Join("\n", e.Targets.Select(t => t.Healed > 0 ? $"{t.Name}  +{t.Healed:N0}" : t.Name)) : null)">@RecapText.Target(e)</td>
+                            <td>
+                                <div class="bars">
+                                    @foreach (var t in hpTargets)
+                                    {
+                                        <div class="hp" title="@RecapText.Hp(t)">
+                                            <div class="fill" style="width:@Percent(t.HpBefore + t.Healed, t.MaxHp)%"></div>
+                                            <div class="heal" style="left:@Percent(t.HpBefore, t.MaxHp)%;width:@(Percent(t.HpBefore + t.Healed, t.MaxHp) - Percent(t.HpBefore, t.MaxHp))%"></div>
+                                            <div class="shield" style="width:@Math.Min(100, (int)t.ShieldPercent)%"></div>
+                                            @if (hpTargets.Count == 1)
+                                            {
+                                                <span>@t.HpBefore.ToString("N0")</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                @foreach (var id in e.StatusIds)
+                                {
+                                    if (game.Statuses.TryGetValue(id, out var status))
+                                    {
+                                        <img class="icon status" src="@Icon(status.Icon)" alt="@status.Name" title="@($"{status.Name}\n{status.Description}")" onerror="this.remove()" />
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else if (row.Cooldowns is { } cooldowns)
+                    {
+                        var wholeDuty = row.Pull == null;
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            @if (Everyone)
+                            {
+                                <td>@PlayerCell(row.Player!.Id)</td>
+                            }
+                            <td colspan="4">
+                                @Unpressed(wholeDuty ? "Never used" : "Not pressed", cooldowns, false, wholeDuty)
+                                @Unpressed("Could press more", cooldowns, true, wholeDuty)
+                            </td>
+                        </tr>
+                    }
+                    else if (row.Pull is { } header)
+                    {
+                        <tr class="pull">
+                            <td>@RecapText.Clock(header.Start)</td>
+                            <td></td>
+                            <td></td>
+                            @if (Everyone)
+                            {
+                                <td></td>
+                            }
+                            <td colspan="4">
+                                @RecapText.PullHeader(header)
+                                @if (rows.NothingPressed(header))
+                                {
+                                    <span class="died"> nothing pressed</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                @if (!rows.AnyEvents)
+                {
+                    <tr>
+                        <td class="grey" colspan="@(Everyone ? 8 : 7)">No mitigations or heals pressed.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </main>
+}
+
+<footer>
+    <a href="https://github.com/Valiice/MitRecap">Mit Recap on GitHub</a>
+    <span>Icons are loaded from XIVAPI. FINAL FANTASY XIV © SQUARE ENIX CO., LTD.</span>
+</footer>
+
+@code {
+    private static readonly GameData NoGame = new([], [], [], [], []);
+
+    private readonly RecapRows rows = new(static (p, log) =>
+        log.Game != null && log.Game.Cooldowns.TryGetValue(p.Id, out var list) ? [.. list.Select(c => c.ToCooldown())] : []);
+
+    private readonly List<TargetHit> hpTargets = [];
+    private string code = "";
+    private string? error;
+    private RecapLog? log;
+    private GameData game = NoGame;
+    private HashSet<uint> hidden = [];
+    private HashSet<uint> mitigations = [];
+    private uint player;
+    private int? pull;
+
+    private bool Everyone => player == 0;
+
+    private static string Icon(uint id) =>
+        $"https://v2.xivapi.com/api/asset?path=ui/icon/{id / 1000 * 1000:000000}/{id:000000}.tex&format=png";
+
+    private static string Role(JobRole role) => role switch
+    {
+        JobRole.Tank => "tank",
+        JobRole.Healer => "healer",
+        JobRole.Melee or JobRole.Ranged => "dps",
+        _ => "",
+    };
+
+    private static int Percent(uint part, uint whole) => whole == 0 ? 0 : (int)Math.Min(100, part * 100UL / whole);
+
+    private void Open()
+    {
+        var decoded = RecapShare.Decode(code);
+        if (decoded?.Game == null)
+        {
+            error = decoded == null
+                ? "That is not a Mit Recap share code."
+                : "This code was made by an older version of Mit Recap. Update the plugin and share the duty again.";
+            return;
+        }
+
+        error = null;
+        log = decoded;
+        game = decoded.Game;
+        hidden = [.. game.Hidden];
+        mitigations = [.. game.Mitigations];
+        Show(0, null);
+    }
+
+    private void Close()
+    {
+        log = null;
+        code = "";
+    }
+
+    private void Show(uint player, int? pull)
+    {
+        this.player = player;
+        this.pull = pull;
+        rows.Build(log!, player, pull, hidden);
+    }
+
+    private GameText Action(uint id) => game.Actions.GetValueOrDefault(id) ?? new GameText($"Action {id}", 0);
+
+    private string? PullTime(RecapEvent e) => e.Pull > 0 ? RecapText.PullTime(log!, e) : null;
+
+    private string DeathTip(RecapEvent death)
+    {
+        if (death.LastHits.Count == 0)
+        {
+            return RecapText.NoDirectHit;
+        }
+
+        var lines = death.LastHits.Select(h => RecapText.LastHit(death, h, Action(h.ActionId).Name)).Prepend("Last hits taken:");
+        return string.Join("\n", death.SurvivedLastHit ? lines.Prepend(RecapText.SurvivedLastHit) : lines);
+    }
+
+    private RenderFragment Ability(uint id) => @<span class="ability">
+        @if (Action(id).Icon != 0)
+        {
+            <img class="icon" src="@Icon(Action(id).Icon)" alt="" onerror="this.remove()" />
+        }
+        @Action(id).Name
+    </span>;
+
+    private RenderFragment PlayerCell(uint id) => @<span class="@Role(log!.Player(id)?.Role ?? JobRole.None)">
+        @if (log!.Player(id) is { JobId: > 0 } p)
+        {
+            <img class="icon" src="@Icon(RecapText.JobIcon(p.JobId))" alt="@p.Job" title="@p.Job" onerror="this.remove()" />
+        }
+        @(log!.Player(id)?.Name ?? "?")
+    </span>;
+
+    private RenderFragment Unpressed(string label, List<CooldownUse> cooldowns, bool pressed, bool wholeDuty) => @<span class="unpressed">
+        @{
+            var shown = cooldowns.Where(u => u.Used > 0 == pressed && !rows.IsHidden(u.Cooldown)).ToList();
+        }
+        @if (shown.Count > 0)
+        {
+            <span class="@(pressed ? "grey" : "died")">@label</span>
+            @foreach (var use in shown)
+            {
+                var text = Action(use.Cooldown.ActionId);
+                <img class="icon" src="@Icon(text.Icon)" alt="@text.Name" title="@RecapText.Cooldown(text.Name, use, wholeDuty)" onerror="this.remove()" />
+                @if (pressed)
+                {
+                    <span class="grey">@use.Used/@use.Possible</span>
+                }
+            }
+        }
+    </span>;
+}

@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="MitRecap.Core/MitRecap.Core.csproj" />
   <Project Path="MitRecap.Tests/MitRecap.Tests.csproj" />
+  <Project Path="MitRecap.Web/MitRecap.Web.csproj" />
   <Project Path="MitRecap/MitRecap.csproj" />
 </Solution>
