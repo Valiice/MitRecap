@@ -16,7 +16,7 @@ public sealed class ActionSummary
     {
         switch (type)
         {
-            case EffectType.Miss or EffectType.FullResist or EffectType.Damage or EffectType.BlockedDamage or EffectType.ParriedDamage or EffectType.Invulnerable:
+            case EffectType.Miss or EffectType.FullResist or EffectType.Damage or EffectType.BlockedDamage or EffectType.ParriedDamage or EffectType.Invulnerable or EffectType.InstantDeath:
                 this.Attacked = true;
                 return 0;
             case EffectType.Heal:

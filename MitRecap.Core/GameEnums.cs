@@ -12,6 +12,7 @@ public enum EffectType : byte
     Invulnerable = 7,
     ApplyStatusTarget = 14,
     ApplyStatusSource = 15,
+    InstantDeath = 51,
 }
 
 public enum DamageType
