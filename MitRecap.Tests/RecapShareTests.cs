@@ -60,6 +60,24 @@ public class RecapShareTests
         Assert.NotNull(RecapShare.Decode(code));
     }
 
+    [Fact]
+    public void NothingPressedIsNotSaidOfAPullTooShortToPressIn()
+    {
+        var log = new RecapLog();
+        log.StartSession(Start);
+        log.Touch(1, "Tank Name", "WAR", 21, JobRole.Tank, 90);
+        log.CombatStarted(At(10));
+        log.CombatEnded(At(11));
+        log.CombatStarted(At(20));
+        log.CombatEnded(At(60));
+
+        var rows = new RecapRows((_, _) => []);
+        rows.Build(log, 0, null, new HashSet<uint>());
+
+        Assert.False(rows.NothingPressed(log.Pulls[0]));
+        Assert.True(rows.NothingPressed(log.Pulls[1]));
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("hello")]

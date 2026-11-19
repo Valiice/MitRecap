@@ -21,8 +21,10 @@ body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font: 14px/1.4 system-ui, sans-serif;
+    font: 15px/1.4 system-ui, sans-serif;
 }
+
+#app { max-width: 1320px; margin: 0 auto; }
 
 a { color: var(--mitigated); }
 
@@ -36,7 +38,7 @@ header, .players, footer {
 
 header { border-bottom: 1px solid var(--line); }
 h1 { margin: 0; font-size: 18px; }
-h2 { margin: 0 0 6px; font-size: 14px; }
+h2 { margin: 0 0 6px; font-size: 15px; }
 .duty { color: var(--grey); flex: 1; }
 footer { color: var(--grey); font-size: 12px; justify-content: space-between; }
 
@@ -71,7 +73,8 @@ thead th { position: sticky; top: 0; background: var(--panel); border-bottom: 1p
 tbody tr:hover { background: #ffffff0a; }
 tr.pull { background: #80808040; }
 tr.death { background: #c0202030; }
-.hpcol { width: 30%; min-width: 180px; }
+.hpcol { min-width: 220px; }
+th:last-child { width: 99%; }
 
 .icon { height: 20px; vertical-align: middle; margin-right: 3px; }
 .ability { color: var(--action); }
@@ -84,7 +87,7 @@ tr.death { background: #c0202030; }
 .unpressed { margin-right: 12px; }
 .unpressed > span:first-child { margin-right: 6px; }
 
-.bars { display: flex; gap: 2px; }
+.bars { display: flex; gap: 2px; width: 220px; }
 .hp { position: relative; flex: 1; height: 18px; background: #2a2c33; overflow: hidden; }
 .hp > div { position: absolute; top: 0; bottom: 0; left: 0; }
 .hp .fill { background: var(--hp); }

@@ -71,12 +71,13 @@ public sealed class RecapRows(Func<PlayerInfo, RecapLog, IReadOnlyList<Cooldown>
 
     public bool IsHidden(Cooldown c) => c.PressIds.Overlaps(this.hidden);
 
-    // False for a selected DPS below the level of their first mitigation, who had nothing to press.
+    // False for a pull too short to press in, and for a selected DPS below the level of their first mitigation.
     public bool NothingPressed(Pull pull)
     {
+        var end = pull.End ?? DateTime.Now - this.log.Started;
         var nothingToPress = this.log.Player(this.player) is { Role: JobRole.Melee or JobRole.Ranged } selected &&
                              this.unused.CooldownsOf(selected).Count == 0;
-        return !nothingToPress && !this.pressedPulls.Contains(pull.Number);
+        return end - pull.Start >= Cooldowns.ShortestJudgedPull && !nothingToPress && !this.pressedPulls.Contains(pull.Number);
     }
 
     private void AddPullRows(Pull pull)

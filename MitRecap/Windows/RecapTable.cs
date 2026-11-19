@@ -15,12 +15,15 @@ internal sealed class RecapTable(Configuration config, ActionCache actions)
     private readonly List<TargetHit> hpTargets = [];
     private View view;
 
-    private int AbilityColumn => this.view.Player == 0 ? PlayerColumn + 1 : PlayerColumn;
+    // With one player in the log the player column would say the same on every row.
+    private bool Everyone => this.view.Player == 0 && this.view.Log.Players.Count > 1;
+
+    private int AbilityColumn => this.Everyone ? PlayerColumn + 1 : PlayerColumn;
 
     public void Draw(View view)
     {
         this.view = view;
-        var everyone = this.view.Player == 0;
+        var everyone = this.Everyone;
         const ImGuiTableFlags flags = ImGuiTableFlags.Borders | ImGuiTableFlags.NoBordersInBody | ImGuiTableFlags.ScrollY | ImGuiTableFlags.Resizable |
                                       ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable;
         if (!ImGui.BeginTable(everyone ? "mitrecap_all2" : "mitrecap2", everyone ? 8 : 7, flags))
@@ -150,7 +153,7 @@ internal sealed class RecapTable(Configuration config, ActionCache actions)
 
     private void DrawCooldownRow(PlayerInfo p, bool wholeDuty, List<CooldownUse> cooldowns)
     {
-        if (this.view.Player == 0)
+        if (this.Everyone)
         {
             ImGui.TableSetColumnIndex(PlayerColumn);
             this.DrawPlayer(p.Id);

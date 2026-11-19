@@ -23,7 +23,7 @@
 }
 else
 {
-    <nav class="players">
+    <nav class="players" hidden="@(log.Players.Count < 2)">
         <button class="@(player == 0 ? "on" : "")" @onclick="() => Show(0, pull)">Everyone</button>
         @foreach (var p in log.Players)
         {
@@ -223,7 +223,7 @@ else
     private uint player;
     private int? pull;
 
-    private bool Everyone => player == 0;
+    private bool Everyone => player == 0 && log!.Players.Count > 1;
 
     private static string Icon(uint id) =>
         $"https://v2.xivapi.com/api/asset?path=ui/icon/{id / 1000 * 1000:000000}/{id:000000}.tex&format=png";
