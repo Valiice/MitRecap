@@ -19,6 +19,7 @@ internal sealed class RecapWindow : Window
     // Null follows the current duty.
     private RecapLog? viewed;
     private int? selectedPull;
+    private float supportButtonWidth;
 
     public RecapWindow(History history, Configuration config)
         : base("Mit Recap###MitRecap")
@@ -134,6 +135,23 @@ internal sealed class RecapWindow : Window
         this.DrawCopyButton();
         ImGui.SameLine();
         this.DrawShareButtons();
+        ImGui.SameLine(Math.Max(ImGui.GetCursorPosX() + ImGui.GetStyle().ItemSpacing.X, ImGui.GetContentRegionMax().X - this.supportButtonWidth));
+        this.DrawSupportButton();
+    }
+
+    private void DrawSupportButton()
+    {
+        if (ImGuiComponents.IconButtonWithText(
+                FontAwesomeIcon.Coffee,
+                "Support",
+                new Vector4(1.0f, 0.35f, 0.35f, 0.9f),
+                new Vector4(1.0f, 0.25f, 0.25f, 1.0f),
+                new Vector4(1.0f, 0.35f, 0.35f, 0.75f)))
+        {
+            Dalamud.Utility.Util.OpenLink("https://ko-fi.com/valiice");
+        }
+
+        this.supportButtonWidth = ImGui.GetItemRectSize().X;
     }
 
     private void DrawClearButton()
