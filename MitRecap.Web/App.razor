@@ -5,6 +5,7 @@
     @if (log != null)
     {
         <span class="duty">@DutyName, @log.Started.ToString("yyyy-MM-dd HH:mm")</span>
+        <button @onclick="Copy">@(copied ? "Copied" : "Copy share code")</button>
         <button @onclick="Close">Open another</button>
     }
 </header>
@@ -239,6 +240,7 @@ else
     private int? pull;
 
     private string[] recent = [];
+    private bool copied;
 
     private bool Everyone => player == 0 && log!.Players.Count > 1;
 
@@ -300,8 +302,15 @@ else
         await Js.InvokeVoidAsync("recent.add", $"{DutyName}, {log.Started:yyyy-MM-dd HH:mm}, {string.Join(", ", log.Players.Select(p => p.Name))}", code.Trim());
     }
 
+    private async Task Copy()
+    {
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", code.Trim());
+        copied = true;
+    }
+
     private async Task Close()
     {
+        copied = false;
         log = null;
         code = "";
         recent = await Js.InvokeAsync<string[]>("recent.labels");
