@@ -62,6 +62,7 @@ public sealed class Plugin : IDalamudPlugin
         this.capture = null;
         this.duty?.Dispose();
         this.duty = null;
+        Windows.BrowserView.Cleanup();
     }
 
     private void OpenWindow() => this.window.IsOpen = true;

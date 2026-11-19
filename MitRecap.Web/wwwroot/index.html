@@ -20,6 +20,33 @@
         Something went wrong.
         <a href="." class="reload">Reload</a>
     </div>
+    <script>
+        // The plugin's browser button puts the share code after the #. It is taken out of the address so it does not stay in the history.
+        const linkedCode = location.hash.slice(1);
+        history.replaceState(null, "", location.pathname);
+        window.takeLinkedCode = () => linkedCode;
+
+        // The last duties opened, kept in this browser only. The key is prefixed because every site on github.io of one account shares storage.
+        const recentKey = "mitrecap.recent";
+        const readRecent = () => JSON.parse(localStorage.getItem(recentKey) ?? "[]");
+        window.recent = {
+            labels: () => readRecent().map(r => r.label),
+            code: i => readRecent()[i].code,
+            clear: () => localStorage.removeItem(recentKey),
+            add(label, code) {
+                const all = [{ label, code }, ...readRecent().filter(r => r.code !== code)].slice(0, 10);
+
+                // Storage is a few MB, so the oldest are dropped until the rest fits.
+                for (; all.length > 0; all.pop()) {
+                    try {
+                        localStorage.setItem(recentKey, JSON.stringify(all));
+                        return;
+                    } catch {
+                    }
+                }
+            },
+        };
+    </script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 

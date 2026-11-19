@@ -97,3 +97,6 @@ th:last-child { width: 99%; }
 
 #blazor-error-ui { display: none; position: fixed; bottom: 0; left: 0; right: 0; padding: 8px 16px; background: #5a1e1e; }
 .died + .ability { margin-left: 4px; }
+.open h2 { margin-top: 32px; }
+.recent { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.recent button { text-align: left; }

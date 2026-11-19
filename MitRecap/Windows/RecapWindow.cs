@@ -233,13 +233,13 @@ internal sealed class RecapWindow : Window
     {
         if (ImGuiComponents.IconButton("share", FontAwesomeIcon.ShareAlt))
         {
-            ImGui.SetClipboardText(RecapShare.Encode(this.Log, ShareGame.Build(this.Log, this.actions)));
+            ImGui.SetClipboardText(this.ShareCode());
             Notify("Share code copied.", NotificationType.Success);
         }
 
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Copy a share code for this duty.\nSomeone else can import it in Mit Recap, or paste it at valiice.github.io/MitRecap.");
+            ImGui.SetTooltip("Copy a share code for this duty.\nSomeone else can import it in Mit Recap, or paste it at " + BrowserView.Site);
         }
 
         ImGui.SameLine();
@@ -251,6 +251,31 @@ internal sealed class RecapWindow : Window
         if (ImGui.IsItemHovered())
         {
             ImGui.SetTooltip("Import a share code from your clipboard.");
+        }
+
+        ImGui.SameLine();
+        if (ImGuiComponents.IconButton("browser", FontAwesomeIcon.ExternalLinkAlt))
+        {
+            this.OpenInBrowser();
+        }
+
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Open this duty in your browser.");
+        }
+    }
+
+    private string ShareCode() => RecapShare.Encode(this.Log, ShareGame.Build(this.Log, this.actions));
+
+    private void OpenInBrowser()
+    {
+        try
+        {
+            BrowserView.Open(this.ShareCode());
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Notify("Could not open the browser. Use the share button and paste the code on the site.", NotificationType.Error);
         }
     }
 

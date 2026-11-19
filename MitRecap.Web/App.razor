@@ -1,8 +1,10 @@
+@inject IJSRuntime Js
+
 <header>
     <h1>Mit Recap</h1>
     @if (log != null)
     {
-        <span class="duty">@(log.DutyName.Length > 0 ? log.DutyName : "Duty"), @log.Started.ToString("yyyy-MM-dd HH:mm")</span>
+        <span class="duty">@DutyName, @log.Started.ToString("yyyy-MM-dd HH:mm")</span>
         <button @onclick="Close">Open another</button>
     }
 </header>
@@ -19,6 +21,19 @@
             <p class="error">@error</p>
         }
         <p class="note">The code is read in your browser. Nothing is uploaded.</p>
+        @if (recent.Length > 0)
+        {
+            <h2>Recent</h2>
+            <nav class="recent">
+                @for (var i = 0; i < recent.Length; i++)
+                {
+                    var index = i;
+                    <button @onclick="() => OpenRecent(index)">@recent[i]</button>
+                }
+            </nav>
+            <button @onclick="Forget">Forget these</button>
+            <p class="note">Kept in this browser only.</p>
+        }
     </main>
 }
 else
@@ -223,7 +238,11 @@ else
     private uint player;
     private int? pull;
 
+    private string[] recent = [];
+
     private bool Everyone => player == 0 && log!.Players.Count > 1;
+
+    private string DutyName => log!.DutyName.Length > 0 ? log.DutyName : "Duty";
 
     private static string Icon(uint id) =>
         $"https://v2.xivapi.com/api/asset?path=ui/icon/{id / 1000 * 1000:000000}/{id:000000}.tex&format=png";
@@ -238,7 +257,30 @@ else
 
     private static int Percent(uint part, uint whole) => whole == 0 ? 0 : (int)Math.Min(100, part * 100UL / whole);
 
-    private void Open()
+    protected override async Task OnInitializedAsync()
+    {
+        code = await Js.InvokeAsync<string>("takeLinkedCode");
+        if (code.Length > 0)
+        {
+            await Open();
+        }
+
+        recent = await Js.InvokeAsync<string[]>("recent.labels");
+    }
+
+    private async Task OpenRecent(int index)
+    {
+        code = await Js.InvokeAsync<string>("recent.code", index);
+        await Open();
+    }
+
+    private async Task Forget()
+    {
+        await Js.InvokeVoidAsync("recent.clear");
+        recent = [];
+    }
+
+    private async Task Open()
     {
         var decoded = RecapShare.Decode(code);
         if (decoded?.Game == null)
@@ -255,12 +297,14 @@ else
         hidden = [.. game.Hidden];
         mitigations = [.. game.Mitigations];
         Show(0, null);
+        await Js.InvokeVoidAsync("recent.add", $"{DutyName}, {log.Started:yyyy-MM-dd HH:mm}, {string.Join(", ", log.Players.Select(p => p.Name))}", code.Trim());
     }
 
-    private void Close()
+    private async Task Close()
     {
         log = null;
         code = "";
+        recent = await Js.InvokeAsync<string[]>("recent.labels");
     }
 
     private void Show(uint player, int? pull)
