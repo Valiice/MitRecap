@@ -5,5 +5,6 @@
   "Punchline": "See when your tanks and healers pressed their mitigations and heals.",
   "Description": "Records every mitigation and heal your party uses during a duty. Right-click a party member in a duty and pick Mit Recap, or type /mitrecap, to see what they pressed and when, pull by pull. Looks and reads like Death Recap, but covers the whole duty and not only deaths.",
   "ApplicableVersion": "any",
+  "RepoUrl": "https://github.com/Valiice/MitRecap",
   "Tags": ["combat", "mitigation", "healing", "recap", "party"]
 }
