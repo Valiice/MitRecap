@@ -102,23 +102,19 @@ internal sealed unsafe class MitCredit(History history, IReadOnlyDictionary<uint
                 ref var effect = ref effects[i].Effects[j];
 
                 var type = (EffectType)effect.Type;
-                var hit = type is EffectType.Damage or EffectType.BlockedDamage or EffectType.ParriedDamage;
-                var damage = hit ? Effects.Value(effect) : 0;
-                if ((damage == 0 && type != EffectType.InstantDeath) || Services.ObjectTable.SearchByEntityId(targetId) is not ICharacter target)
+                if (Services.ObjectTable.SearchByEntityId(targetId) is not ICharacter target ||
+                    EnemyHit.Amount(type, Effects.Value(effect), target.CurrentHp) is not { } damage)
                 {
                     continue;
                 }
 
                 var source = attacker != null ? attacker->NameString : "";
-
-                // A wipe mechanic such as Ancient Flare kills outright and carries no damage number, so it takes all the HP left.
+                this.Log.AddDamage(DateTime.Now, targetId, source, header->ActionId, damage, target.CurrentHp, target.MaxHp, autoAttack);
                 if (type == EffectType.InstantDeath)
                 {
-                    this.Log.AddDamage(DateTime.Now, targetId, source, header->ActionId, target.CurrentHp, target.CurrentHp, target.MaxHp);
                     continue;
                 }
 
-                this.Log.AddDamage(DateTime.Now, targetId, source, header->ActionId, damage, target.CurrentHp, target.MaxHp, autoAttack);
                 this.CreditMitigations(attacker, target, damage, (DamageType)(effect.Param1 & 0xF));
                 this.CreditShields(target, damage);
             }

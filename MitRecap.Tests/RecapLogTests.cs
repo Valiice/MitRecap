@@ -47,6 +47,25 @@ public class RecapLogTests
     }
 
     [Fact]
+    public void AnInstantDeathEffectIsTheKillingBlow()
+    {
+        Assert.Null(EnemyHit.Amount(EffectType.Damage, 0, 5000));
+        Assert.Null(EnemyHit.Amount(EffectType.ApplyStatusTarget, 12, 5000));
+        Assert.Equal(700u, EnemyHit.Amount(EffectType.BlockedDamage, 700, 5000));
+        Assert.Equal(5000u, EnemyHit.Amount((EffectType)0x33, 0, 5000));
+
+        var start = new DateTime(2026, 1, 1, 20, 0, 0);
+        var log = new RecapLog();
+        log.StartSession(start);
+        log.AddDamage(start.AddSeconds(10), 1, "Phlegethon", 50, EnemyHit.Amount(EffectType.InstantDeath, 0, 5000)!.Value, 5000, 6000);
+        log.AddDeath(start.AddSeconds(11), 1);
+
+        var death = Assert.Single(log.Events);
+        Assert.Equal(50u, death.KillingBlow?.ActionId);
+        Assert.Equal("Died to", RecapText.DeathVerb(death));
+    }
+
+    [Fact]
     public void AHitOnSomeoneAlreadyAtZeroIsNotTheKillingBlow()
     {
         var start = new DateTime(2026, 1, 1, 20, 0, 0);

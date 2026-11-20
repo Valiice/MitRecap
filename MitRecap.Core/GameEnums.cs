@@ -15,6 +15,18 @@ public enum EffectType : byte
     InstantDeath = 51,
 }
 
+public static class EnemyHit
+{
+    // What a hit takes from its target, or null when the effect is not a hit.
+    // A wipe mechanic such as Ancient Flare kills outright and carries no damage number, so it takes all the HP left.
+    public static uint? Amount(EffectType type, uint value, uint targetHp) => type switch
+    {
+        EffectType.Damage or EffectType.BlockedDamage or EffectType.ParriedDamage when value > 0 => value,
+        EffectType.InstantDeath => targetHp,
+        _ => null,
+    };
+}
+
 public enum DamageType
 {
     Slashing = 1,
